@@ -2,6 +2,7 @@ package cef_test
 
 import (
 	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -38,6 +39,17 @@ var _ = Describe("CefFormatter", func() {
 				logger.Info("test")
 
 				Expect(buf.String()).To(Equal("CEF:0|arthurhlt|logrus-cef|1.0|test|test|0|\n"))
+			})
+		})
+		When("Reusing an event", func() {
+			It("should not clear the signature_id", func() {
+				entry := logger.WithField(KeySignatureID, "my-signature")
+
+				entry.Info("test.1")
+				Expect(buf.String()).To(ContainSubstring("CEF:0|arthurhlt|logrus-cef|1.0|my-signature|test.1|0|rt="))
+
+				entry.Info("test.2")
+				Expect(buf.String()).To(ContainSubstring("CEF:0|arthurhlt|logrus-cef|1.0|my-signature|test.2|0|rt="))
 			})
 		})
 		When("With field", func() {
