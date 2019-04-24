@@ -3,10 +3,11 @@ package cef
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const KeySignatureID = "signature_id"
@@ -29,11 +30,10 @@ func NewCEFFormatter(deviceVendor, deviceProduct, deviceVersion string) *formatt
 }
 
 func (f formatter) Format(entry *logrus.Entry) ([]byte, error) {
-	sigId := entry.Message
+	sigID := entry.Message
 	data := entry.Data
 	if _, ok := entry.Data[KeySignatureID]; ok {
-		sigId = fmt.Sprint(data[KeySignatureID])
-		delete(data, KeySignatureID)
+		sigID = fmt.Sprint(data[KeySignatureID])
 	}
 	name := entry.Message
 	if !f.DisableTimestamp {
@@ -49,7 +49,7 @@ func (f formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		f.DeviceVendor,
 		f.DeviceProduct,
 		f.DeviceVersion,
-		sigId,
+		sigID,
 		name,
 		f.level(entry),
 		fmtData,
@@ -60,6 +60,9 @@ func (f formatter) Format(entry *logrus.Entry) ([]byte, error) {
 func (f formatter) formatData(fields logrus.Fields) (string, error) {
 	keyVals := make([]string, 0)
 	for k, v := range fields {
+		if k == KeySignatureID {
+			continue
+		}
 		vKind := reflect.TypeOf(v).Kind()
 		vFormat := ""
 		if vKind == reflect.Struct ||
